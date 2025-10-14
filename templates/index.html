@@ -1,0 +1,28 @@
+ {% extends "base.html" %}
+ 
+ {% block head %}
+ <title>Drawn</title>
+ {% endblock %}
+
+ {% block body %}
+ <h1>Welcome to My Website</h1>
+ <div class="content">
+        <h1>Drawn</h1>
+       <table>
+        <tr>
+           <th>Commissions</th>
+           <th>Added</th>
+           <th>Actions</th>
+        </tr>
+        <tr>
+              <td>Content</td>
+              <td>Data</td>
+              <td>More</td>
+        </tr>
+         </table>  
+         <form action="">   
+            <input type="text" name="content" id="content" />
+            <input type="submit" value="Add Commission" id="btn_add"/>
+         </form>  
+    </div> 
+ {% endblock %}
