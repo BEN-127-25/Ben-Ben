@@ -1,36 +1,52 @@
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_scss import Scss
+from flask import Flask, render_template, request, redirect
+import sqlite3
 
 app = Flask(__name__)
-Scss(app, static_dir='static', asset_dir='assets')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///da.db'
-db = SQLAlchemy(app)
+def init_db():
+    conn = sqlite3.connect('jobs.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            company TEXT NOT NULL,
+            description TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
-class myComms(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    client = db.Column(db.String(100), nullable=False)
-    title = db.Column(db.String(150), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    details = db.Column(db.Text, nullable=False)
+init_db()
 
-    def __repr__(self):
-        return f'<myComms {self.name}>'
-
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
-    return render_template('testing.html')
-    
+    conn = sqlite3.connect('jobs.db')
+    c = conn.cursor()
 
+    if request.method == 'POST':
+        title = request.form['title']
+        company = request.form['company']
+        description = request.form['description']
+        c.execute('INSERT INTO jobs (title, company, description) VALUES (?, ?, ?)',
+                  (title, company, description))
+        conn.commit()
+        conn.close()
+        return redirect('/')
 
+    c.execute('SELECT * FROM jobs')
+    jobs = c.fetchall()
+    conn.close()
+    return render_template('index.html', jobs=jobs)
 
-
-
-
-
-
+@app.route('/delete/<int:id>')
+def delete_job(id):
+    conn = sqlite3.connect('jobs.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM jobs WHERE id=?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug=True)
